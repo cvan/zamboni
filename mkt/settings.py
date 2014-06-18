@@ -94,9 +94,8 @@ INSTALLED_APPS = (
 
     # Third party apps
     'djcelery',
-    'django_extensions',
+    'django_extensions',  # for ./manage.py shell_plus, etc.
     'django_nose',
-    'gunicorn',
     'raven.contrib.django',
     'waffle',
 

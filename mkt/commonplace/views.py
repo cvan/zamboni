@@ -1,5 +1,4 @@
 import datetime
-import importlib
 import os
 from urlparse import urlparse
 
@@ -17,26 +16,17 @@ from cache_nuggets.lib import memoize
 
 def get_build_id(repo):
     try:
-        # This is where the `build_{repo}.py` files get written to after
-        # compiling and minifying our assets.
-        # Get the `BUILD_ID` from `build_{repo}.py` and use that to
-        # cache-bust the assets for this repo's CSS/JS minified bundles.
-        module = 'build_%s' % repo
-        return importlib.import_module(module).BUILD_ID
-    except (ImportError, AttributeError):
+        build_id_fn = os.path.join(settings.MEDIA_ROOT, repo, 'build_id.txt')
+        with storage.open(build_id_fn) as fh:
+            return fh.read()
+    except:
+        # Fall back to `BUILD_ID_JS` which is written to `build.py` by
+        # jingo-minify.
         try:
-            build_id_fn = os.path.join(settings.MEDIA_ROOT, repo, 'build_id.txt')
-            with storage.open(build_id_fn) as fh:
-                return fh.read()
-        except:
-            # Either `build_{repo}.py` does not exist or `build_{repo}.py`
-            # exists but does not contain `BUILD_ID`. Fall back to
-            # `BUILD_ID_JS` which is written to `build.py` by jingo-minify.
-            try:
-                from build import BUILD_ID_CSS
-                return BUILD_ID_CSS
-            except ImportError:
-                return 'dev'
+            from build import BUILD_ID_CSS
+            return BUILD_ID_CSS
+        except ImportError:
+            return 'dev'
 
 
 def get_imgurls(repo):
